@@ -139,27 +139,50 @@ def alias_axes(axes, ref):
         new_axes = axes[[y_id,x_id,z_id]]
     return new_axes
 
-def _adjust_planar_c2v(atom_coords, axes):
-    '''Adjust axes for planar molecules'''
-    # Following http://iopenshell.usc.edu/resources/howto/symmetry/
-    # See also discussions in issue #1201
-    # * planar C2v molecules should be oriented such that the X axis is perpendicular
-    # to the plane of the molecule, and the Z axis is the axis of symmetry;
+def _standardize_axes_c2v(atom_coords, axes):
+    '''
+    Adjust axes for planar and (most) nonplanar C2v molecules.
+    Following http://iopenshell.usc.edu/resources/howto/symmetry/
+    See also discussions in issue #1201
+    * planar C2v molecules should be oriented such that the X axis is perpendicular
+    to the plane of the molecule, and the Z axis is the axis of symmetry;
+
+    For non-planar C2v molecules, 
+    - Z is the C2 axis
+    - Let the greatest number of atoms lie in the yz plane.
+    - Equiv: Let X be perpendicular to the main molecular plane
+    '''
     natm = len(atom_coords)
     tol = TOLERANCE / numpy.sqrt(1+natm)
-    atoms_on_xz = abs(atom_coords.dot(axes[1])) < tol
-    if all(atoms_on_xz):
+    x, y, z = axes
+    atoms_on_xz = numpy.count_nonzero(abs(atom_coords.dot(y)) < tol)
+    atoms_on_yz = numpy.count_nonzero(abs(atom_coords.dot(x)) < tol)
+    print('xz', atoms_on_xz, '| yz', atoms_on_yz)
+    if atoms_on_yz > atoms_on_xz:
+        pass
+    elif atoms_on_yz < atoms_on_xz:
         # rotate xy
-        axes = numpy.array([-axes[1], axes[0], axes[2]])
+        print('rotate')
+        axes = numpy.array([-y, x, z])
+    else:
+        raise PointGroupSymmetryError(
+            'C2v symmetry axes are ambiguous. No convention is implemented ' \
+            'yet for the case when there is the same number of atoms on ' \
+            'both xz- and yz- planes.')
     return axes
 
-def _adjust_planar_d2h(atom_coords, axes):
-    '''Adjust axes for planar molecules'''
-    # Following http://iopenshell.usc.edu/resources/howto/symmetry/
-    # See also discussions in issue #1201
-    # * planar D2h molecules should be oriented such that the X axis is
-    # perpendicular to the plane of the molecule, and the Z axis passes through
-    # the greatest number of atoms.
+def _standardize_axes_d2h(atom_coords, axes):
+    '''
+    Adjust axes for planar D2h molecules.
+    Following http://iopenshell.usc.edu/resources/howto/symmetry/
+    See also discussions in issue #1201
+    * planar D2h molecules should be oriented such that the X axis is
+    perpendicular to the plane of the molecule, and the Z axis passes through
+    the greatest number of atoms.
+
+    Currently NO implementation for non-planar D2h, which is still ambiguous!
+    - e.g. diborane has a tie for Z axis, two pass through 2 atoms
+    '''
     natm = len(atom_coords)
     tol = TOLERANCE / numpy.sqrt(1+natm)
     natm_with_x = numpy.count_nonzero(abs(atom_coords.dot(axes[0])) > tol)
@@ -308,7 +331,7 @@ def detect_symm(atoms, basis=None, verbose=logger.WARN):
                 if rawsys.has_icenter():
                     gpname = 'D2h'
                     # _adjust_planar_d2h is unlikely to be called
-                    axes = _adjust_planar_d2h(rawsys.atom_coords, axes)
+                    axes = _standardize_axes_d2h(rawsys.atom_coords, axes)
                 else:
                     gpname = 'D2'
             elif is_c2z or is_c2x or is_c2y:
@@ -320,7 +343,7 @@ def detect_symm(atoms, basis=None, verbose=logger.WARN):
                     gpname = 'C2h'
                 elif rawsys.has_mirror(axes[0]):
                     gpname = 'C2v'
-                    axes = _adjust_planar_c2v(rawsys.atom_coords, axes)
+                    axes = _standardize_axes_c2v(rawsys.atom_coords, axes)
                 else:
                     gpname = 'C2'
             else:
