@@ -182,12 +182,22 @@ def _standardize_axes_d2h(atom_coords, axes):
 
     Currently NO implementation for non-planar D2h, which is still ambiguous!
     - e.g. diborane has a tie for Z axis, two pass through 2 atoms
+
+    WARN: High possibility that no tiebreakers are in place!!
     '''
     natm = len(atom_coords)
     tol = TOLERANCE / numpy.sqrt(1+natm)
     natm_with_x = numpy.count_nonzero(abs(atom_coords.dot(axes[0])) > tol)
     natm_with_y = numpy.count_nonzero(abs(atom_coords.dot(axes[1])) > tol)
     natm_with_z = numpy.count_nonzero(abs(atom_coords.dot(axes[2])) > tol)
+
+    n_planes_with_atoms = numpy.count_nonzero(
+        [natm_with_x, natm_with_y, natm_with_z])
+    if n_planes_with_atoms != 1:
+        raise PointGroupSymmetryError(
+            'D2h symmetry axes are ambiguous. No convention is implemented ' \
+            'yet for the case when the molecule is nonplanar.')
+
     if natm_with_z == 0:  # atoms on xy plane
         if natm_with_x >= natm_with_y:  # atoms-on-y >= atoms-on-x
             # rotate xz
