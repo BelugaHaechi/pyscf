@@ -190,14 +190,6 @@ def _standardize_axes_d2h(atom_coords, axes):
     natm_with_x = numpy.count_nonzero(abs(atom_coords.dot(axes[0])) > tol)
     natm_with_y = numpy.count_nonzero(abs(atom_coords.dot(axes[1])) > tol)
     natm_with_z = numpy.count_nonzero(abs(atom_coords.dot(axes[2])) > tol)
-
-    n_planes_with_atoms = numpy.count_nonzero(
-        [natm_with_x, natm_with_y, natm_with_z])
-    if n_planes_with_atoms != 1:
-        raise PointGroupSymmetryError(
-            'D2h symmetry axes are ambiguous. No convention is implemented ' \
-            'yet for the case when the molecule is nonplanar.')
-
     if natm_with_z == 0:  # atoms on xy plane
         if natm_with_x >= natm_with_y:  # atoms-on-y >= atoms-on-x
             # rotate xz
@@ -216,6 +208,10 @@ def _standardize_axes_d2h(atom_coords, axes):
         if natm_with_y > natm_with_z:  # atoms-on-z < atoms-on-y # CHANGED
             # rotate yz
             axes = numpy.array([axes[0], -axes[2], axes[1]])
+    else: # all xyz can be nonzero, so atoms are not in the same plane
+        raise PointGroupSymmetryError(
+            'D2h symmetry axes are ambiguous. No convention is implemented ' \
+            'yet for the case when the molecule is nonplanar.')
     return axes
 
 def detect_symm(atoms, basis=None, verbose=logger.WARN):
