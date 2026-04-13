@@ -87,7 +87,7 @@ def ROKS(mol, xc='LDA,VWN'):
 ROKS.__doc__ = roks.ROKS.__doc__
 
 def UKS(mol, xc='LDA,VWN'):
-    if not mol.symmetry or mol.groupname == 'C1':
+    if not mol.symmetry:
         return uks.UKS(mol, xc)
     else:
         return uks_symm.UKS(mol, xc)
