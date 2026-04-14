@@ -112,8 +112,8 @@ def rotation_mat(vec, theta):
 
 # reflection operation with householder
 def householder(vec):
-    vec = _normalize(vec)
-    return numpy.eye(3) - vec[:,None]*vec*2
+    v = _normalize(vec)
+    return numpy.eye(3) - 2 * numpy.outer(v, v)
 
 def closest_axes(axes, ref):
     xcomp, ycomp, zcomp = numpy.einsum('ix,jx->ji', axes, ref)
