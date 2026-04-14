@@ -71,7 +71,7 @@ DFT = KS
 
 def RKS(mol, xc='LDA,VWN'):
     if mol.spin == 0:
-        if not mol.symmetry or mol.groupname == 'C1':
+        if not mol.symmetry:
             return rks.RKS(mol, xc)
         else:
             return rks_symm.RKS(mol, xc)
@@ -80,7 +80,7 @@ def RKS(mol, xc='LDA,VWN'):
 RKS.__doc__ = rks.RKS.__doc__
 
 def ROKS(mol, xc='LDA,VWN'):
-    if not mol.symmetry or mol.groupname == 'C1':
+    if not mol.symmetry:
         return roks.ROKS(mol, xc)
     else:
         return rks_symm.ROKS(mol, xc)
@@ -94,7 +94,7 @@ def UKS(mol, xc='LDA,VWN'):
 UKS.__doc__ = uks.UKS.__doc__
 
 def GKS(mol, xc='LDA,VWN'):
-    if not mol.symmetry or mol.groupname == 'C1':
+    if not mol.symmetry:
         return gks.GKS(mol, xc)
     else:
         return gks_symm.GKS(mol, xc)
