@@ -157,12 +157,10 @@ def _standardize_axes_c2v(atom_coords, axes):
     x, y, z = axes
     atoms_on_xz = numpy.count_nonzero(abs(atom_coords.dot(y)) < tol)
     atoms_on_yz = numpy.count_nonzero(abs(atom_coords.dot(x)) < tol)
-    print('xz', atoms_on_xz, '| yz', atoms_on_yz)
     if atoms_on_yz > atoms_on_xz:
         pass
     elif atoms_on_yz < atoms_on_xz:
         # rotate xy
-        print('rotate')
         axes = numpy.array([-y, x, z])
     else:
         raise PointGroupSymmetryError(
