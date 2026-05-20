@@ -163,10 +163,9 @@ def _standardize_axes_c2v(atom_coords, axes):
         # rotate xy
         axes = numpy.array([-y, x, z])
     else:
-        raise PointGroupSymmetryError(
-            'C2v symmetry axes are ambiguous. No convention is implemented ' \
-            'yet for the case when there is the same number of atoms on ' \
-            'both xz- and yz- planes.')
+        print('WARN: C2v symmetry axes are ambiguous. No change to axes.' \
+            'No convention is implemented yet for the case when there is ' \
+            'the same number of atoms on both xz- and yz- planes.')
     return axes
 
 def _standardize_axes_d2h(atom_coords, axes):
